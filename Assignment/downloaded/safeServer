@@ -1,0 +1,66 @@
+"""import secket library"""
+from socket import*
+import os
+"""create an identifier"""
+IP = "sl-dual-287"
+Port = 12346
+"""helping variables"""
+FORMAT = "utf-8"
+size = 1024
+
+"""start main"""
+def main():
+    """create an server socket and bind it to the port"""
+    server = socket(AF_INET,SOCK_STREAM)
+    server.bind(("", Port))
+    server.listen(1)
+    
+    """loop forever"""
+    while True:
+        """create connectionSocket"""
+        con, address = server.accept()
+        helper = con.recv(1024).decode(FORMAT)
+        print(helper)
+        if helper =="s":
+            """recieve file name from client"""
+            filename = con.recv(1024).decode(FORMAT)
+            """direct the file to file storage directory"""
+            path = os.path.dirname(os.path.realpath(__file__))
+            des_Dir = os.path.join(path,"FileStorage")        
+            
+            print("file name recieved")
+            """open file and send message back to client"""
+            file = open(os.path.join(des_Dir,filename), "w")
+            con.send("Filename Recived".encode(FORMAT))
+            """recieve file data from client"""
+            data = con.recv(1024).decode(FORMAT)
+            print(f"[RECV]File data received.")
+            """write to file"""
+            file.write(data)
+            
+            
+            """send message back to the client"""
+            con.send("file data recieved".encode(FORMAT))
+            """close the file and socket"""
+            file.close()
+            con.close()
+        elif helper == "r":
+            """Access file and read data"""
+            file = open("/home/k/knnbon009/network/FileStorage/NewFile.txt", "r")
+            data = file.read()            
+            """send file name to the server"""
+            con.send("File.txt".encode(FORMAT))
+            con.recv(1024)
+            """send file data to the server"""
+            con.send(data.encode(FORMAT)) 
+        elif helper == "l":
+            entries = os.listdir('downloaded/')
+            for item in entries:
+                con.send(item.encode(FORMAT))
+            
+
+
+if __name__ == "__main__":
+    main()
+
+
